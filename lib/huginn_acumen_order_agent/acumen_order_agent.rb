@@ -22,6 +22,7 @@ module Agents
         * endpoint: The root URL for the Acumen API
         * site_code: The site code from Acumen
         * password: The Acumen API password
+        * output_mode  - not required ('clean' or 'merge', defaults to 'clean')
 
         ### Payload Status
 
@@ -63,6 +64,7 @@ module Agents
                 'endpoint' => 'https://example.com',
                 'site_code' => '',
                 'password' => '',
+                'output_mode' => 'clean',
             }
         end
 
@@ -79,7 +81,9 @@ module Agents
                 errors.add(:base, 'password is a required field')
             end
 
-
+            if options['output_mode'].present? && !options['output_mode'].to_s.include?('{') && !%[clean merge].include?(options['output_mode'].to_s)
+              errors.add(:base, "if provided, output_mode must be 'clean' or 'merge'")
+            end
         end
 
         def working?
@@ -100,7 +104,7 @@ module Agents
 
         def handle(event)
             # Process agent options
-            endpoint = interpolated['endpoint']
+            endpoint = interpolated['endpoint'][-1,1] == "/" ? interpolated['endpoint'] : interpolated['endpoint'] + "/"
             site_code = interpolated['site_code']
             password = interpolated['password']
 
@@ -111,33 +115,37 @@ module Agents
                 'endpoint' => endpoint,
             }
             client = AcumenOrderClient.new(faraday, auth)
-
+            data = event.payload
             order_codes = event.payload['order_codes']
+            new_event = interpolated['output_mode'].to_s == 'merge' ? data.dup : {}
 
             begin
               invoices = fetch_invoice_data(client, order_codes)
 
               unless invoices.blank?
                 invoices = fetch_invoice_details(client, invoices)
-                create_event payload: { invoices: invoices, status: 200 }
+                create_event payload: new_event.merge(
+                  invoices: invoices,
+                  status: 200
+                )
               end
             rescue AcumenOrderError => e
-              issue_error(e)
+              issue_error(e, new_event)
             end
         end
 
-        def issue_error(error, status = 500)
+        def issue_error(error, new_event, status = 500)
           # NOTE: Status is intentionally included on the top-level payload so that other
           # agents can look for a `payload[:status]` of either 200 or 500 to distinguish
           # between success and failure states
-          create_event payload: {
+          create_event payload: new_event.merge(
             status: status,
             scope: error.scope,
             message: error.message,
             original_error: error.original_error,
             data: error.data,
             trace: error.original_error.backtrace,
-          }
+          )
         end
 
     end

@@ -20,12 +20,12 @@ class AcumenOrderClient
   end
 
   def execute_query(body, headers)
-      response = @faraday.run_request(:post, "#{@auth['endpoint']}/Query", body, headers)
+      response = @faraday.run_request(:post, "#{@auth['endpoint']}Query", body, headers)
       ::MultiXml.parse(response.body, {})
   end
 
   def execute_in_list_query(body, headers)
-      response = @faraday.run_request(:post, "#{@auth['endpoint']}/QueryByInList", body, headers)
+      response = @faraday.run_request(:post, "#{@auth['endpoint']}QueryByInList", body, headers)
       ::MultiXml.parse(response.body, {})
   end
 
