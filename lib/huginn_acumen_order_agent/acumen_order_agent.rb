@@ -104,7 +104,8 @@ module Agents
 
         def handle(event)
             # Process agent options
-            endpoint = interpolated['endpoint'][-1,1] == "/" ? interpolated['endpoint'] : interpolated['endpoint'] + "/"
+            endpoint = interpolated['endpoint']
+            endpoint = endpoint += '/' unless endpoint.end_with?('/')
             site_code = interpolated['site_code']
             password = interpolated['password']
 
