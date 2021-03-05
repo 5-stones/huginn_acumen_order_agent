@@ -34,6 +34,7 @@ module InvoiceDetailQueryConcern
           'Invoice_Detail.BO_Prebill' => 'is_prebill',
           'Invoice_Detail.Invoice_ID' => 'invoice_id',
           'Invoice_Detail.Modified_Date' => 'modified_date',
+          'Invoice_Detail.BO_Original_Invoice_DETAIL_ID' => 'bo_original_detail_id',
 
         })
 
@@ -75,6 +76,8 @@ module InvoiceDetailQueryConcern
               'name' => i['title'],
               'acumenAttributes' => {},
               'modifiedDate' => i['modified_date'],
+              'invoiceDetailID' => i['id'],
+              'boOriginalDetailId' => i['bo_original_detail_id'],
             }
 
             #----------  Acumen Specific Properties  ----------#
