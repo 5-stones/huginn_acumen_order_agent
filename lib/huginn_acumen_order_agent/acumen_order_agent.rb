@@ -135,17 +135,15 @@ module Agents
             end
         end
 
-        def issue_error(error, new_event, status = 500)
+        def issue_error(error, new_event)
           # NOTE: Status is intentionally included on the top-level payload so that other
           # agents can look for a `payload[:status]` of either 200 or 500 to distinguish
           # between success and failure states
           create_event payload: new_event.merge(
-            status: status,
+            status: error.status,
             scope: error.scope,
             message: error.message,
-            original_error: error.original_error,
             data: error.data,
-            trace: error.original_error.backtrace,
           )
         end
 

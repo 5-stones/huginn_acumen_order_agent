@@ -48,9 +48,10 @@ module InvoiceQueryConcern
 
       rescue => error
         issue_error(AcumenOrderError.new(
+          500,
           'process_invoice_response',
           'Failed to load invoice records',
-          { raw_data: i },
+          { invoice_id: get_field_value(i, 'Invoice.Invoice_ID') },
           error,
         ))
       end

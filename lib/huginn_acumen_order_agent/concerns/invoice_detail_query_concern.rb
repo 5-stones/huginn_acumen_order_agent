@@ -41,9 +41,10 @@ module InvoiceDetailQueryConcern
         results << mapped_item
       rescue => error
         issue_error(AcumenOrderError.new(
+          500,
           'process_invoice_detail_response',
           'Failed while processing Invoice_Detail record',
-          invoice_details,
+          { invoice_details_id: get_field_value(invoice_details, 'Invoice_Detail.Invoice_DEATAIL_ID') },
           error,
         ))
       end
@@ -90,9 +91,15 @@ module InvoiceDetailQueryConcern
         end
       rescue => error
         issue_error(AcumenOrderError.new(
+          500,
           'map_line_item_data',
           'Failed to map line item data for invoice',
-          { invoice: invoice, line_items: items },
+          {
+            invoice_id: invoice['identifier'],
+            line_item_ids: items.map { |p|
+              { id: p['identifier'], sku: p['sku'] }
+            }
+          },
           error,
         ))
       end
